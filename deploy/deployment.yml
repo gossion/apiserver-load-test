@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apiserver-load-tester
+spec:
+  replicas: 20
+  selector:
+    matchLabels:
+      app: apiserver-load-tester
+  template:
+    metadata:
+      labels:
+        app: apiserver-load-tester
+    spec:
+      hostNetwork: true
+      serviceAccountName: loadtest
+      containers:
+      - name: tester
+        image: guwe/apiserver-load-tester-http:0876309
+        imagePullPolicy: IfNotPresent
+        command: ["/root/apiserver-load-tester"]
+        args:
+        - "-concurrent-connections=5000"
+        - "-api-server=https://10.224.0.4:443"
+        - "-verbose=false"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - apiserver-load-tester
+            topologyKey: "kubernetes.io/hostname"

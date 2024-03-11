@@ -1,0 +1,1 @@
+client-go reuses the connections, so this app does not work.
